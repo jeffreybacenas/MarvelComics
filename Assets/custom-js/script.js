@@ -17,8 +17,7 @@ async function fetchAllMarvelCharacters() {
         // Fetch characters until all are retrieved
         do {
             const response = await fetch(`${baseURL}?apikey=${publicKey}&ts=${timestamp}&hash=${md5Hash}&limit=${limit}&offset=${offset}`);
-            data = await response.json(); // Store the response in the data variable
-            console.log(data.data.results);
+            data = await response.json(); 
             // Check if the data is received as expected
             if (data && data.data && data.data.results) {
                 // Append characters from this page to the array
@@ -33,11 +32,28 @@ async function fetchAllMarvelCharacters() {
 
         // Now, allCharacters contains all Marvel characters
 
-        // You can loop through allCharacters and populate your table or perform other actions as needed
+        populateMarvelTable(allCharacters);
+
     } catch (error) {
         console.error('Error fetching Marvel data:', error);
     }
 }
+// Function to populate the HTML table with the fetched data
+function populateMarvelTable(allCharacters) {
+    const tableBody = document.querySelector('#marvelTable tbody');
+    console.log(allCharacters);
+    allCharacters.forEach(character => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${character.name}</td>
+            <td>${character.description}</td>
+            <td><img src="${character.thumbnail.path}.${character.thumbnail.extension}" alt="${character.name}"></td>
+            <!-- Add more columns as needed -->
+        `;
+        tableBody.appendChild(row);
+    });
+}
 
 // Call the function to fetch all characters
 fetchAllMarvelCharacters();
+
