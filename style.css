@@ -1,0 +1,58 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+.bgImage
+{
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-image: url("http://i.annihil.us/u/prod/marvel/i/mg/3/20/5232158de5b16.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}
+.bgImage::after{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    Left: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+.content{
+    position: absolute;
+    top: 50%;
+    Left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.content h2{
+    font-size: 50px;
+    color: white;
+    margin-bottom: 20px;
+}
+.content h2 span{
+    color: #0077b6;
+}
+.content p{
+    font-size: 20px;
+    color: white;
+    opacity: 0.8;
+}
+.content button{
+    padding: 12px 22px;
+    margin-top: 30px;
+    font-size: 22px;
+    border: none;
+    outline: none;
+    color: white;
+    background-color: #0077b6;
+    border-radius: 25px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.5s;
+}
