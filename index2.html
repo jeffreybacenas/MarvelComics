@@ -2,22 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Character Info</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="bgImage"></div>
     <div class="content">
-        <input type="search"><br><br>
-        <h2 ></h2>
+        <input type="text" id="characterNameInput" placeholder="Type character name...">
+        <h2></h2>
         <p></p>
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script src="Assets/crypto-js/crypto-js.js"></script>
-<!-- 
-    <script src="Assets/custom-js/script.js"></script> -->
 
     <script>
         const publicKey = 'fe30a8eb0db9660122bb4ebcb06b4d8c';
@@ -31,33 +28,55 @@
         }
 
         // Function to fetch character data and update the HTML elements
-        function fetchCharacterData(characterName) {
+        function fetchCharacterData() {
+            const characterName = $('#characterNameInput').val();
             const timestamp = new Date().getTime();
             const hash = generateHash(timestamp);
 
             $.ajax({
-                url: `${baseURL}?ts=${timestamp}&apikey=${publicKey}&hash=${hash}&name=${characterName}`,
+                url: `${baseURL}?ts=${timestamp}&apikey=${publicKey}&hash=${hash}&nameStartsWith=${characterName}`,
                 method: 'GET',
                 success: function (response) {
-                    const character = response.data.results[0];
-                    if (character) {
-                        // Update the HTML elements with character data
-                        $('h2').text(character.name);
-                        $('p').text(character.description);
+                    const characters = response.data.results;
+                    const characterList = $('#characterList');
+                    characterList.empty(); // Clear the list before adding new characters
+
+                    if (characters.length > 0) {
+                        characters.forEach(function (character) {
+                            const listItem = $('<div>').text(character.name);
+                            listItem.on('click', function () {
+                                // When a character is clicked, populate the details
+                                $('h2').text(character.name);
+                                $('p').text(character.description);
+
+                                // Set the background image
+                                const imageUrl = `${character.thumbnail.path}.${character.thumbnail.extension}`;
+                                $('.bgImage').css('background-image', `url(${imageUrl})`);
+                            });
+                            characterList.append(listItem);
+                        });
                     } else {
-                        $('h2').text('Character not found');
+                        characterList.empty(); // Clear the list if no characters found
+                        $('h2').text('');
                         $('p').text('');
+                        $('.bgImage').css('background-image', 'none');
                     }
                 },
                 error: function () {
+                    characterList.empty(); // Clear the list in case of an error
                     $('h2').text('Error fetching data');
                     $('p').text('');
+                    $('.bgImage').css('background-image', 'none');
                 }
             });
         }
 
-        // Call the function to fetch data for a specific character (e.g., Spider-Man)
-        fetchCharacterData('Iron Man');
+        // Bind the fetchCharacterData function to input field change event
+        $('#characterNameInput').on('input', fetchCharacterData);
+
+        // Create a div to display the character search results
+        const characterList = $('<div id="characterList"></div>');
+        $('.content').append(characterList);
     </script>
 </body>
 </html>
