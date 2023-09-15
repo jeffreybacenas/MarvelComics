@@ -4,51 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marvel Character Info</title>
+    <link rel="stylesheet" href="style.css"> <!-- Add a separate CSS file for styling -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="bgImage"></div>
     <div class="content">
         <input type="text" id="characterNameInput" placeholder="Type character name...">
+        <div id="characterList"></div>
         <h2></h2>
         <p></p>
+        <div id="loadingIndicator" style="display: none;">Loading...</div>
     </div>
-
+    
     <script>
         const publicKey = 'fe30a8eb0db9660122bb4ebcb06b4d8c';
         const privateKey = 'c09d6998cf36b3573a2d1f26c3fa47fc20919c76';
         const baseURL = 'https://gateway.marvel.com/v1/public/characters';
-
+        let timer;
+        
+        const characterNameInput = $('#characterNameInput');
+        const characterList = $('#characterList');
+        const loadingIndicator = $('#loadingIndicator');
+        const h2 = $('h2');
+        const p = $('p');
+        
         // Function to generate a hash for the API request using CryptoJS
         function generateHash(timestamp) {
             const input = timestamp + privateKey + publicKey;
             return CryptoJS.MD5(input).toString();
         }
-
+        
         // Function to fetch character data and update the HTML elements
-        function fetchCharacterData() {
-            const characterName = $('#characterNameInput').val();
+        function fetchCharacterData(characterName) {
             const timestamp = new Date().getTime();
             const hash = generateHash(timestamp);
-
+            
             $.ajax({
                 url: `${baseURL}?ts=${timestamp}&apikey=${publicKey}&hash=${hash}&nameStartsWith=${characterName}`,
                 method: 'GET',
+                beforeSend: function () {
+                    loadingIndicator.show(); // Show loading indicator before making the request
+                },
                 success: function (response) {
                     const characters = response.data.results;
-                    const characterList = $('#characterList');
                     characterList.empty(); // Clear the list before adding new characters
-
+                    
                     if (characters.length > 0) {
                         characters.forEach(function (character) {
                             const listItem = $('<div>').text(character.name);
                             listItem.on('click', function () {
                                 // When a character is clicked, populate the details
-                                $('h2').text(character.name);
-                                $('p').text(character.description);
-
+                                h2.text(character.name);
+                                p.text(character.description);
+                                
                                 // Set the background image
                                 const imageUrl = `${character.thumbnail.path}.${character.thumbnail.extension}`;
                                 $('.bgImage').css('background-image', `url(${imageUrl})`);
@@ -57,26 +67,38 @@
                         });
                     } else {
                         characterList.empty(); // Clear the list if no characters found
-                        $('h2').text('');
-                        $('p').text('');
+                        h2.text('');
+                        p.text('');
                         $('.bgImage').css('background-image', 'none');
                     }
                 },
                 error: function () {
                     characterList.empty(); // Clear the list in case of an error
-                    $('h2').text('Error fetching data');
-                    $('p').text('');
+                    h2.text('Error fetching data');
+                    p.text('');
                     $('.bgImage').css('background-image', 'none');
+                },
+                complete: function () {
+                    loadingIndicator.hide(); // Hide loading indicator when the request is complete
                 }
             });
         }
-
-        // Bind the fetchCharacterData function to input field change event
-        $('#characterNameInput').on('input', fetchCharacterData);
-
-        // Create a div to display the character search results
-        const characterList = $('<div id="characterList"></div>');
-        $('.content').append(characterList);
+        
+        // Bind the fetchCharacterData function to input field input event with debounce
+        characterNameInput.on('input', function () {
+            const characterName = $(this).val().trim();
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                fetchCharacterData(characterName);
+            }, 500); // Add a delay of 500 milliseconds before making the request
+        });
+        
+        // Load Iron Man data on page load
+        fetchCharacterData('Iron Man');
     </script>
+    
+    
+    
+    
 </body>
 </html>
